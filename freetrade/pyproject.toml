@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "freetrade"
+version = "0.1.0"
+description = ""
+authors = ["James Walden <james.m.walden@outlook.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+requests = "^2.32.3"
+google-cloud-storage = "^2.18.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
