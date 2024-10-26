@@ -20,3 +20,7 @@ BLOB_NAME = os.getenv("GCS_BLOB_NAME", "data_engineering_task.json")
 
 RETRIES = os.getenv("REQUEST_RETRIES", 3)
 BACKOFF_FACTOR = os.getenv("REQUEST_BACKOFF_FACTOR", 1)
+
+FAKER_QUANTITY = os.getenv("FAKER_QUANTITY", 10)
+if FAKER_QUANTITY <= 0:
+    raise ValueError("FAKER_QUANTITY must be greater than 0.")

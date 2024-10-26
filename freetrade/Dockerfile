@@ -30,4 +30,4 @@ COPY ./ ./
 
 ENV PYTHONPATH="./:"
 
-CMD ["python", "freetrade/etl.py"]
+CMD ["poetry", "run", "python", "freetrade/etl.py"]

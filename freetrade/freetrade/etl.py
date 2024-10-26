@@ -6,24 +6,16 @@ from pydantic import ValidationError
 
 from freetrade import (
     BLOB_NAME,
+    FAKER_QUANTITY,
     RUN_IDENTIFIER,
     RUN_TIMESTAMP,
     RUN_TIMESTAMP_STR,
     RUN_UNIQUE_ID,
 )
 from freetrade.api_handler import get_request
-from freetrade.gcs import (
-    delete_gcs_object,
-    get_gcs_object,
-    list_gcs_objects,
-    upload_to_gcs,
-)
+from freetrade.gcs import get_gcs_object, upload_to_gcs
 from freetrade.logger import LOGS_FILE_NAME, logger
 from freetrade.models import FakerData, FakerResponse
-
-FAKER_QUANTITY = os.getenv("FAKER_QUANTITY", 10)
-if FAKER_QUANTITY <= 0:
-    raise ValueError("FAKER_QUANTITY must be greater than 0.")
 
 
 def get_faker_data(quantity: int) -> dict | None:
@@ -33,7 +25,7 @@ def get_faker_data(quantity: int) -> dict | None:
         quantity (int): the quantity of users to retrieve.
 
     Returns:
-        dict | None: A dictionary response or None if the request fails.
+        dict | None: a dictionary response or None if the request fails.
     """
     FAKER_URL = f"https://fakerapi.it/api/v1/users?_quantity={quantity}"
 
@@ -69,7 +61,15 @@ def validate_response(
     return None, error_strs
 
 
-def transform_data(data: list[FakerData]):
+def transform_data(data: list[FakerData]) -> list[FakerData]:
+    """Transform data by adding pipeline id and pipeline timestamp.
+
+    Args:
+        data (list[FakerData]): list of data to transform.
+
+    Returns:
+        list[FakerData]: list of transformed data.
+    """
     for x in data:
         # add run id
         x.pipeline_id = RUN_UNIQUE_ID
@@ -80,7 +80,14 @@ def transform_data(data: list[FakerData]):
 
 
 def load_data_to_gcs(data: list[FakerData]) -> bool:
+    """Upload data to gcs, both to target and history.
 
+    Args:
+        data (list[FakerData]): list of data to upload.
+
+    Returns:
+        bool: success status of upload.
+    """
     data_as_json = [x.model_dump_json(serialize_as_any=True) for x in data]
 
     try:
@@ -94,7 +101,6 @@ def load_data_to_gcs(data: list[FakerData]) -> bool:
             temp_file_name = temp_file.name
 
         # upload to main target
-        logger.info(f"BLOB NAME: {BLOB_NAME}")
         upload_to_gcs(
             source_file_path=temp_file_name,
             target_file_path=BLOB_NAME,
@@ -112,14 +118,27 @@ def load_data_to_gcs(data: list[FakerData]) -> bool:
         return False
 
 
-def check_uploaded_file(expected_data: list[FakerData]):
+def check_uploaded_file(expected_data: list[FakerData]) -> bool:
+    """Check uploaded file.
+
+    Args:
+        data (list[FakerData]): list of data to validate has been uploaded.
+
+    Returns:
+        bool: success status of upload.
+    """
     uploaded_data = get_gcs_object(target_file_path=BLOB_NAME)
 
     return len(uploaded_data) == len(expected_data)
 
 
 def save_failed_response(response: dict, errors: list[str]):
+    """Save response that failed validation.
 
+    Args:
+        response (dict): response that failed validation.
+        errors (list[str]): list of errors.
+    """
     failed_response = {"errors": errors, "response": response}
 
     target_file_path = f"failed/{RUN_IDENTIFIER}_response.json"
@@ -133,10 +152,12 @@ def save_failed_response(response: dict, errors: list[str]):
 
 
 def save_logs():
+    """Save logs to gcs."""
     upload_to_gcs(source_file_path=LOGS_FILE_NAME, target_file_path=LOGS_FILE_NAME)
 
 
 def pipeline():
+    """Pipeline function."""
     logger.info(f"Starting run with ID: {RUN_UNIQUE_ID} at {RUN_TIMESTAMP_STR}.")
     try:
         # extract data
@@ -177,22 +198,4 @@ def pipeline():
 
 
 if __name__ == "__main__":
-    # pipeline()
-
-    # logger.info("========================================")
-
-    gcs_object_names = list_gcs_objects("james_walden", log=True)
-    gcs_object_names = list_gcs_objects("test-prefix", log=True)
-
-    # for name in gcs_object_names:
-    #     delete_gcs_object(name)
-
-    # logger.info("========================================")
-
-    # data = get_gcs_object(target_file_path="data_engineering_task.json")
-
-    # print(data)
-
-    # logger.info("========================================")
-
-    # get_gcs_object(target_file_path=f"history/{RUN_IDENTIFIER}.json")
+    pipeline()
