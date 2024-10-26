@@ -13,8 +13,9 @@ from freetrade.gcs import (
     upload_to_gcs,
 )
 
-TEST_PREFIX = "test-prefix"
-TEST_TARGET_PATH = "test-target-path"
+TEST_PREFIX = os.environ["GCS_BLOB_PREFIX"]
+TEST_TARGET_PATH = os.environ["GCS_BLOB_NAME"]
+TEST_BUCKET_NAME = os.environ["GCS_BUCKET_NAME"]
 
 
 @pytest.fixture
@@ -66,7 +67,7 @@ def test_upload_to_gcs_bucket_not_found(mock_storage_client, mocker, caplog):
             source_file_path=temp_file.name, target_file_path=TEST_TARGET_PATH
         )
 
-    assert "Bucket test-bucket not found" in caplog.text
+    assert f"Bucket {TEST_BUCKET_NAME} not found" in caplog.text
 
 
 def test_upload_to_gcs_permission_denied(mock_storage_client, mocker, caplog):

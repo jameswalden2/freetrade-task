@@ -13,7 +13,7 @@ from freetrade import (
     RUN_UNIQUE_ID,
 )
 from freetrade.api_handler import get_request
-from freetrade.gcs import get_gcs_object, upload_to_gcs
+from freetrade.gcs import get_gcs_object, list_gcs_objects, upload_to_gcs
 from freetrade.logger import LOGS_FILE_NAME, logger
 from freetrade.models import FakerData, FakerResponse
 
@@ -198,4 +198,8 @@ def pipeline():
 
 
 if __name__ == "__main__":
+    # run pipeline
     pipeline()
+
+    # list files to prove it's worked
+    list_gcs_objects(prefix=os.environ["GCS_BLOB_PREFIX"], log=True)

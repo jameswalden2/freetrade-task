@@ -20,12 +20,8 @@ def upload_to_gcs(source_file_path: str, target_file_path: str, retries: int = 3
     storage_client = storage.Client.create_anonymous_client()
     bucket = storage_client.bucket(BUCKET_NAME)
     target_file_path = os.path.join(BLOB_PREFIX, target_file_path)
-
     blob = bucket.blob(target_file_path)
-
-    # first delete blob if exists
     if blob.exists():
-        # don't need to catch NotFound because check existed
         logger.info(f"Deleting blob: {target_file_path}")
         blob.delete()
     else:
@@ -106,16 +102,8 @@ def delete_gcs_object(target_file_path: str):
 
     blob = bucket.blob(target_file_path)
 
-    # first delete blob if exists
     if blob.exists():
-        # don't need to catch NotFound because check existed
         logger.info(f"Deleting blob: {target_file_path}")
         blob.delete()
     else:
         logger.info(f"Blob: {target_file_path}, does not exist")
-
-
-# blobs_list = list_gcs_objects(prefix=BLOB_PREFIX)
-# blob_present_in_bucket = os.path.join(BLOB_PREFIX, target_file_path) in blobs_list
-
-# logger.info(f"Blob validation: {blob_present_in_bucket}")
