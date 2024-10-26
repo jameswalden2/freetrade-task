@@ -1,9 +1,13 @@
 import os
 import random
 import string
-from datetime import datetime
+from datetime import datetime, timezone
 
-RUN_TIMESTAMP = datetime.now()
+from dotenv import load_dotenv
+
+load_dotenv("./.env.freetrade")
+
+RUN_TIMESTAMP = datetime.now(timezone.utc)
 RUN_TIMESTAMP_STR = RUN_TIMESTAMP.strftime("%Y_%m_%d__%H_%M_%S")
 
 RUN_UNIQUE_ID = "".join(

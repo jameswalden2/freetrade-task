@@ -3,6 +3,6 @@ version: '3.8'
 services:
   faker_pipeline:
     image: freetrade/faker-pipeline
-    env_file: "../../freetrade/.env"
+    env_file: "../../freetrade/.env.freetrade"
     build: ../../freetrade
     restart: "no"

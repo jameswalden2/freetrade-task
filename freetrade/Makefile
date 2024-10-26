@@ -3,3 +3,6 @@ test:
 
 lint:
 	poetry run black .
+
+run_pipeline:
+	poetry run python freetrade/etl.py

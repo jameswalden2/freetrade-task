@@ -4,8 +4,8 @@ Freetrade technical test background information.
 
 ## Instructions to run
 
-1) Run the docker image using ./run-docker-image.sh
-2) Use docker compose
+1) Run the docker image using ./run-docker-image.sh from inside the freetrade directory.
+2) Use docker compose from the deploys/docker-compose directory
 
 Env file (included in repo for ease of running):
 
@@ -14,6 +14,24 @@ GCS_BUCKET_NAME=freetrade-data-eng-hiring
 GCS_BLOB_PREFIX=james_walden
 GCS_BLOB_NAME=data_engineering_task.json
 ```
+
+## Development environment
+
+This project uses poetry to manage dependencies.
+
+I use pyenv to manage virtual environments.
+
+Create a new virtualenv using pyenv, `pyenv virtualenv 3.10 freetrade-env`.
+
+Set new env to be local env in freetrade directory, `pyenv local freetrade-env`.
+
+Run poetry install to install all deps including dev, `poetry install`.
+
+To lint and test, use the Makefile from inside the freetrade directory, e.g.:
+
+- `make lint`
+- `make test`
+- `make run_pipeline`
 
 ## Storage Format
 
