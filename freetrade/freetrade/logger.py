@@ -1,6 +1,6 @@
 import logging
 
-from freetrade.setup import RUN_TIMESTAMP_STR, RUN_UNIQUE_ID
+from freetrade import RUN_IDENTIFIER
 
 logger = logging.getLogger("freetrade")
 logger.setLevel(logging.INFO)
@@ -12,7 +12,7 @@ stream_handler = logging.StreamHandler()
 stream_handler.setFormatter(formatter)
 logger.addHandler(stream_handler)
 
-LOGS_FILE_NAME = f"logs/{RUN_UNIQUE_ID}_{RUN_TIMESTAMP_STR}.txt"
+LOGS_FILE_NAME = f"logs/{RUN_IDENTIFIER}.txt"
 
 file_handler = logging.FileHandler(LOGS_FILE_NAME)
 file_handler.setFormatter(formatter)

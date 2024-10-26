@@ -4,10 +4,8 @@ import time
 import requests
 from requests import HTTPError
 
+from freetrade import BACKOFF_FACTOR, RETRIES
 from freetrade.logger import logger
-
-RETRIES = os.getenv("REQUEST_RETRIES", 3)
-BACKOFF_FACTOR = os.getenv("REQUEST_BACKOFF_FACTOR", 1)
 
 
 def get_request(url: str) -> dict:

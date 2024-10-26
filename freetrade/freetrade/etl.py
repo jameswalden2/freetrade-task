@@ -1,18 +1,25 @@
 import json
 import os
 import tempfile
-from typing import Any
 
 from pydantic import ValidationError
 
+from freetrade import (
+    BLOB_NAME,
+    RUN_IDENTIFIER,
+    RUN_TIMESTAMP,
+    RUN_TIMESTAMP_STR,
+    RUN_UNIQUE_ID,
+)
 from freetrade.api_handler import get_request
-from freetrade.gcs import list_gcs_objects, upload_to_gcs, validate_presence_of_file
+from freetrade.gcs import (
+    delete_gcs_object,
+    get_gcs_object,
+    list_gcs_objects,
+    upload_to_gcs,
+)
 from freetrade.logger import LOGS_FILE_NAME, logger
 from freetrade.models import FakerData, FakerResponse
-from freetrade.setup import RUN_TIMESTAMP_STR, RUN_UNIQUE_ID
-
-BLOB_NAME = os.getenv("GCS_BLOB_NAME", "dev/data_engineering_task.json")
-
 
 FAKER_QUANTITY = os.getenv("FAKER_QUANTITY", 10)
 if FAKER_QUANTITY <= 0:
@@ -57,45 +64,65 @@ def validate_response(
         logger.error(f"Encountered {e.error_count()} errors trying to validate data.")
         error_strs = [json.dumps(x) for x in e.errors()]
         for error in error_strs:
-            logger.info(json.dumps(error))
+            logger.info(error)
 
     return None, error_strs
 
 
-def transform_response(data: list[FakerData]):
+def transform_data(data: list[FakerData]):
     for x in data:
         # add run id
         x.pipeline_id = RUN_UNIQUE_ID
         # add run timestamp
-        x.pipeline_timestamp = RUN_TIMESTAMP_STR
+        x.pipeline_timestamp = RUN_TIMESTAMP
 
     return data
 
 
-def load_data_to_gcs(data: list[FakerData], target_file_path: str) -> bool:
+def load_data_to_gcs(data: list[FakerData]) -> bool:
 
     data_as_json = [x.model_dump_json(serialize_as_any=True) for x in data]
 
     try:
-        with tempfile.NamedTemporaryFile(suffix=".json", mode="w") as temp_file:
+        with tempfile.NamedTemporaryFile(
+            delete=False, suffix=".json", mode="w"
+        ) as temp_file:
             for data in data_as_json:
-                json.dump(data, temp_file)
+                temp_file.write(data)
                 temp_file.write("\n")
-            upload_to_gcs(
-                source_file_path=temp_file.name,
-                target_file_path=target_file_path,
-            )
+
+            temp_file_name = temp_file.name
+
+        # upload to main target
+        logger.info(f"BLOB NAME: {BLOB_NAME}")
+        upload_to_gcs(
+            source_file_path=temp_file_name,
+            target_file_path=BLOB_NAME,
+        )
+        # upload to history
+        upload_to_gcs(
+            source_file_path=temp_file_name,
+            target_file_path=f"history/{RUN_IDENTIFIER}.json",
+        )
+
+        os.remove(temp_file_name)
         return True
     except Exception as e:
         logger.error(e)
         return False
 
 
+def check_uploaded_file(expected_data: list[FakerData]):
+    uploaded_data = get_gcs_object(target_file_path=BLOB_NAME)
+
+    return len(uploaded_data) == len(expected_data)
+
+
 def save_failed_response(response: dict, errors: list[str]):
 
     failed_response = {"errors": errors, "response": response}
 
-    target_file_path = f"failed/{RUN_UNIQUE_ID}_{RUN_TIMESTAMP_STR}_response.json"
+    target_file_path = f"failed/{RUN_IDENTIFIER}_response.json"
 
     with tempfile.NamedTemporaryFile(suffix=".json", mode="w") as temp_file:
         json.dump(failed_response, temp_file)
@@ -110,6 +137,7 @@ def save_logs():
 
 
 def pipeline():
+    logger.info(f"Starting run with ID: {RUN_UNIQUE_ID} at {RUN_TIMESTAMP_STR}.")
     try:
         # extract data
         response = get_faker_data(quantity=FAKER_QUANTITY)
@@ -127,23 +155,44 @@ def pipeline():
             )
             raise Exception("Response failed validation.")
 
-        load_success = load_data_to_gcs(data=data)
+        transformed_data = transform_data(data=data)
+
+        load_success = load_data_to_gcs(data=transformed_data)
 
         if not load_success:
             raise Exception("Failed to upload to GCS.")
 
-        validation_success = validate_presence_of_file(target_file_path=BLOB_NAME)
+        validation_success = check_uploaded_file(expected_data=transformed_data)
 
         if not validation_success:
-            raise Exception("Blob not present in GCS bucket.")
+            raise Exception("Blob not uploaded correctly in GCS bucket.")
     except Exception as e:
         logger.error(e)
+        logger.error("PIPELINE FAILED")
+        raise Exception("Pipeline failed, see traceback.")
 
     finally:
+        logger.info("Pipeline successful.")
         save_logs()
 
 
 if __name__ == "__main__":
-    pipeline()
+    # pipeline()
 
-    list_gcs_objects("james_walden")
+    # logger.info("========================================")
+
+    gcs_object_names = list_gcs_objects("james_walden", log=True)
+    gcs_object_names = list_gcs_objects("test-prefix", log=True)
+
+    # for name in gcs_object_names:
+    #     delete_gcs_object(name)
+
+    # logger.info("========================================")
+
+    # data = get_gcs_object(target_file_path="data_engineering_task.json")
+
+    # print(data)
+
+    # logger.info("========================================")
+
+    # get_gcs_object(target_file_path=f"history/{RUN_IDENTIFIER}.json")
