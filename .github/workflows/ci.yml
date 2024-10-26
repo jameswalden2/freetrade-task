@@ -8,6 +8,11 @@ on:
     branches:
       - main
 
+env:
+  GCS_BUCKET_NAME: "test-bucket"
+  GCS_BLOB_PREFIX: "test-prefix"
+  GCS_BLOB_NAME: "test-blob-name"
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -48,6 +53,10 @@ jobs:
         run: |
           make lint
 
-      - name: Lint
+      - name: Test
         run: |
           make test
+
+      - name: Build Docker image
+        run: |
+          docker build -t freetrade .
