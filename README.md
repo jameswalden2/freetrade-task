@@ -43,6 +43,8 @@ To lint and test, use the Makefile from inside the freetrade directory, e.g.:
 
 ## BigQuery Compatibility
 
+Noted that don't actually need to load it into BigQuery but figured it was a good test to see if the format was compatible.
+
 ![ta da](bigquery.png "BigQuery Compatibility")
 
 ## Improvements
