@@ -1,0 +1,17 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: faker-pipeline
+spec:
+  schedule: "0 0 * * *"  # Schedule: every day at midnight
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: etl-container
+            image: freetrade
+            env:
+            - name: FAKER_QUANTITY
+              value: "5"
+          restartPolicy: OnFailure

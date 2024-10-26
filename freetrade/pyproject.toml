@@ -12,6 +12,7 @@ google-cloud-storage = "^2.18.2"
 pydantic = "^2.9.2"
 email-validator = "^2.2.0"
 pandas = "^2.2.3"
+pydantic-extra-types = "^2.9.0"
 
 
 [build-system]

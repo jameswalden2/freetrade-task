@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  faker_pipeline:
+    image: freetrade/faker-pipeline
+    build: ../freetrade
+    environment:
+      - FAKER_QUANTITY=${FAKER_QUANTITY}
+    restart: "no"

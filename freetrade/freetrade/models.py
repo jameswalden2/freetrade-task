@@ -1,4 +1,7 @@
-from pydantic import BaseModel, EmailStr
+from uuid import UUID
+
+from pydantic import AnyHttpUrl, BaseModel, EmailStr, IPvAnyAddress
+from pydantic_extra_types.mac_address import MacAddress
 
 
 class FakerData(BaseModel):
@@ -9,10 +12,12 @@ class FakerData(BaseModel):
     username: str
     password: str
     email: EmailStr
-    ip: str
-    macAddress: str
-    website: str
-    image: str
+    ip: IPvAnyAddress
+    macAddress: MacAddress
+    website: AnyHttpUrl
+    image: AnyHttpUrl
+    pipeline_id: str | None
+    pipeline_timestamp: str | None
 
 
 class FakerResponse(BaseModel):
