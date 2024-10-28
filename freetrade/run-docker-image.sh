@@ -1,12 +1,12 @@
 #!/bin/bash
 
-IMAGE_NAME="my-docker-image"
+IMAGE_NAME="james_walden/freetrade"
 
-echo "Building Docker image..."
+echo "build image..."
 docker build -t $IMAGE_NAME .
 
-echo "Running Docker container..."
+echo "run container..."
 CONTAINER_ID=$(docker run -d --env-file .env.freetrade $IMAGE_NAME)
 
-echo "Tailing logs for container $CONTAINER_ID..."
+echo "tail logs for container $CONTAINER_ID..."
 docker logs -f $CONTAINER_ID

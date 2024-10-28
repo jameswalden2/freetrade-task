@@ -5,10 +5,6 @@ from requests.exceptions import HTTPError, Timeout
 
 from freetrade.api_handler import get_request
 
-# Define RETRIES and BACKOFF_FACTOR for testing purposes
-RETRIES = 3
-BACKOFF_FACTOR = 0.1
-
 
 def test_successful_request(mocker):
     mock_response = Mock()
@@ -32,7 +28,6 @@ def test_http_error(mocker, caplog):
 
 
 def test_transient_error_then_success(mocker, caplog):
-    # Mock two timeouts followed by a successful response
     mock_response = Mock()
     mock_response.json.return_value = {"key": "value"}
     mocker.patch(

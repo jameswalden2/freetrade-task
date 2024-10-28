@@ -9,6 +9,11 @@ from freetrade.logger import logger
 
 
 def get_request(url: str) -> dict:
+    """Handler for get request with retry.
+
+    Args:
+        url (str): url to make request to.
+    """
 
     for attempt in range(RETRIES):
         try:

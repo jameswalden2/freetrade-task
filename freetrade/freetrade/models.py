@@ -6,6 +6,8 @@ from pydantic_extra_types.mac_address import MacAddress
 
 
 class FakerData(BaseModel):
+    """Faker data User pydantic class."""
+
     id: int
     uuid: UUID
     firstname: str
@@ -22,4 +24,6 @@ class FakerData(BaseModel):
 
 
 class FakerResponse(BaseModel):
+    """Faker response pydantic class."""
+
     data: list[FakerData]
